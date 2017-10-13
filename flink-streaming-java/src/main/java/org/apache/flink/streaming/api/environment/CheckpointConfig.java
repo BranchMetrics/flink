@@ -259,8 +259,7 @@ public class CheckpointConfig implements java.io.Serializable {
 	}
 
 	@PublicEvolving
-	public void enableExternalizedCheckpoints(String externalizedCheckpointDirectory,
-											  ExternalizedCheckpointCleanup cleanupMode) {
+	public void enableExternalizedCheckpoints(String externalizedCheckpointDirectory, ExternalizedCheckpointCleanup cleanupMode) {
 		this.externalizedCheckpointDirectory = externalizedCheckpointDirectory;
 		this.externalizedCheckpointCleanup = checkNotNull(cleanupMode);
 	}
