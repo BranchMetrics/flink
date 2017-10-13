@@ -165,6 +165,19 @@ public class SavepointStore {
 	}
 
 	/**
+	 * Stores the externalized checkpoint metadata file to a state handle.
+	 *
+	 * @param directory Target directory to store savepoint in
+	 * @param savepoint Savepoint to be stored
+	 *
+	 * @return State handle to the checkpoint metadata
+	 * @throws IOException Failures during store are forwarded
+	 */
+	public static <T extends Savepoint> FileStateHandle storeExternalizedCheckpointToHandle(String directory, String fileName, T savepoint) throws IOException {
+		return storeSavepointToHandle(directory, fileName, savepoint);
+	}
+
+	/**
 	 * Stores the savepoint metadata file to a state handle.
 	 *
 	 * @param directory Target directory to store savepoint in
