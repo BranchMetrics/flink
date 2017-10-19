@@ -70,6 +70,7 @@ public class CheckpointConfig implements java.io.Serializable {
 	/** Cleanup behaviour for persistent checkpoints. */
 	private ExternalizedCheckpointCleanup externalizedCheckpointCleanup;
 
+	private String externalizedCheckpointDirectory;
 	// ------------------------------------------------------------------------
 
 	/**
@@ -253,9 +254,15 @@ public class CheckpointConfig implements java.io.Serializable {
 	 */
 	@PublicEvolving
 	public void enableExternalizedCheckpoints(ExternalizedCheckpointCleanup cleanupMode) {
+		this.externalizedCheckpointDirectory = null;
 		this.externalizedCheckpointCleanup = checkNotNull(cleanupMode);
 	}
 
+	@PublicEvolving
+	public void enableExternalizedCheckpoints(String externalizedCheckpointDirectory, ExternalizedCheckpointCleanup cleanupMode) {
+		this.externalizedCheckpointDirectory = externalizedCheckpointDirectory;
+		this.externalizedCheckpointCleanup = checkNotNull(cleanupMode);
+	}
 	/**
 	 * Returns whether checkpoints should be persisted externally.
 	 *
@@ -275,6 +282,11 @@ public class CheckpointConfig implements java.io.Serializable {
 	@PublicEvolving
 	public ExternalizedCheckpointCleanup getExternalizedCheckpointCleanup() {
 		return externalizedCheckpointCleanup;
+	}
+
+	@PublicEvolving
+	public String getExternalizedCheckpointDirectory() {
+		return externalizedCheckpointDirectory;
 	}
 
 	/**

@@ -283,7 +283,8 @@ public class PendingCheckpoint {
 	
 					return finalizeInternal(metadataHandle, externalPointer);
 				} else {
-					final FileStateHandle metadataHandle = SavepointStore.storeExternalizedCheckpointToHandle(targetDirectory, savepoint);
+					String chkFileName = jobId + "-" + checkpointTimestamp + "-" + checkpointId;
+					final FileStateHandle metadataHandle = SavepointStore.storeExternalizedCheckpointToHandle(targetDirectory, chkFileName, savepoint);
 					final String externalPointer = metadataHandle.getFilePath().toString();
 
 					return finalizeInternal(metadataHandle, externalPointer);

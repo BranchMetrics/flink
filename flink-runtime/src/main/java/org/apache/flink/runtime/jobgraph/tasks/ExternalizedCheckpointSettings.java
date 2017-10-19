@@ -28,7 +28,7 @@ public class ExternalizedCheckpointSettings implements java.io.Serializable {
 
 	private static final long serialVersionUID = -6271691851124392955L;
 
-	private static final ExternalizedCheckpointSettings NONE = new ExternalizedCheckpointSettings(false, false);
+	private static final ExternalizedCheckpointSettings NONE = new ExternalizedCheckpointSettings(false, false, null);
 
 	/** Flag indicating whether checkpoints should be externalized. */
 	private final boolean externalizeCheckpoints;
@@ -36,9 +36,12 @@ public class ExternalizedCheckpointSettings implements java.io.Serializable {
 	/** Flag indicating whether externalized checkpoints should delete on cancellation. */
 	private final boolean deleteOnCancellation;
 
-	private ExternalizedCheckpointSettings(boolean externalizeCheckpoints, boolean deleteOnCancellation) {
+	private final String externalizedCheckpointDirectory;
+
+	private ExternalizedCheckpointSettings(boolean externalizeCheckpoints, boolean deleteOnCancellation, String externalizedCheckpointDirectory) {
 		this.externalizeCheckpoints = externalizeCheckpoints;
 		this.deleteOnCancellation = deleteOnCancellation;
+		this.externalizedCheckpointDirectory = externalizedCheckpointDirectory;
 	}
 
 	/**
@@ -59,8 +62,17 @@ public class ExternalizedCheckpointSettings implements java.io.Serializable {
 		return deleteOnCancellation;
 	}
 
+	public String getExternalizedCheckpointDirectory() {
+		return externalizedCheckpointDirectory;
+	}
+
+
 	public static ExternalizedCheckpointSettings externalizeCheckpoints(boolean deleteOnCancellation) {
-		return new ExternalizedCheckpointSettings(true, deleteOnCancellation);
+		return new ExternalizedCheckpointSettings(true, deleteOnCancellation, null);
+	}
+
+	public static ExternalizedCheckpointSettings externalizeCheckpoints(boolean deleteOnCancellation, String externalizedCheckpointDirectory) {
+		return new ExternalizedCheckpointSettings(true, deleteOnCancellation, externalizedCheckpointDirectory);
 	}
 
 	public static ExternalizedCheckpointSettings none() {

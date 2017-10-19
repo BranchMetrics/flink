@@ -119,7 +119,7 @@ public class CheckpointCoordinator {
 	/** Default directory for persistent checkpoints; <code>null</code> if none configured.
 	 * THIS WILL BE REPLACED BY PROPER STATE-BACKEND METADATA WRITING */
 	@Nullable
-	private final String checkpointDirectory;
+	private final String checkpointRootDirectory;
 
 	/** A list of recent checkpoint IDs, to identify late messages (vs invalid ones) */
 	private final ArrayDeque<Long> recentPendingCheckpoints;
@@ -181,6 +181,7 @@ public class CheckpointCoordinator {
 	/** Registry that tracks state which is shared across (incremental) checkpoints */
 	private SharedStateRegistry sharedStateRegistry;
 
+	private String checkpointDirectory;
 	// --------------------------------------------------------------------------------------------
 
 	public CheckpointCoordinator(
@@ -195,7 +196,7 @@ public class CheckpointCoordinator {
 			ExecutionVertex[] tasksToCommitTo,
 			CheckpointIDCounter checkpointIDCounter,
 			CompletedCheckpointStore completedCheckpointStore,
-			@Nullable String checkpointDirectory,
+			@Nullable String checkpointRootDirectory,
 			Executor executor,
 			SharedStateRegistryFactory sharedStateRegistryFactory) {
 
@@ -205,7 +206,7 @@ public class CheckpointCoordinator {
 		checkArgument(minPauseBetweenCheckpoints >= 0, "minPauseBetweenCheckpoints must be >= 0");
 		checkArgument(maxConcurrentCheckpointAttempts >= 1, "maxConcurrentCheckpointAttempts must be >= 1");
 
-		if (externalizeSettings.externalizeCheckpoints() && checkpointDirectory == null) {
+		if (externalizeSettings.externalizeCheckpoints() && checkpointRootDirectory == null) {
 			throw new IllegalStateException("CheckpointConfig says to persist periodic " +
 					"checkpoints, but no checkpoint directory has been configured. You can " +
 					"configure configure one via key '" + ConfigConstants.CHECKPOINTS_DIRECTORY_KEY + "'.");
@@ -233,7 +234,7 @@ public class CheckpointCoordinator {
 		this.pendingCheckpoints = new LinkedHashMap<>();
 		this.checkpointIdCounter = checkNotNull(checkpointIDCounter);
 		this.completedCheckpointStore = checkNotNull(completedCheckpointStore);
-		this.checkpointDirectory = checkpointDirectory;
+		this.checkpointRootDirectory = checkpointRootDirectory;
 		this.executor = checkNotNull(executor);
 		this.sharedStateRegistryFactory = checkNotNull(sharedStateRegistryFactory);
 		this.sharedStateRegistry = sharedStateRegistryFactory.create(executor);
@@ -250,10 +251,17 @@ public class CheckpointCoordinator {
 		this.timer.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
 		if (externalizeSettings.externalizeCheckpoints()) {
+			if (externalizeSettings.getExternalizedCheckpointDirectory() != null) {
+				this.checkpointDirectory = checkpointRootDirectory + '/' + externalizeSettings.getExternalizedCheckpointDirectory();
+			}
 			LOG.info("Persisting periodic checkpoints externally at {}.", checkpointDirectory);
 			checkpointProperties = CheckpointProperties.forExternalizedCheckpoint(externalizeSettings.deleteOnCancellation());
 		} else {
 			checkpointProperties = CheckpointProperties.forStandardCheckpoint();
+		}
+
+		if (this.checkpointDirectory == null) {
+			this.checkpointDirectory = this.checkpointRootDirectory;
 		}
 
 		try {

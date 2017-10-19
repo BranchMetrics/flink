@@ -608,11 +608,16 @@ public class StreamingJobGraphGenerator {
 		ExternalizedCheckpointSettings externalizedCheckpointSettings;
 		if (cfg.isExternalizedCheckpointsEnabled()) {
 			CheckpointConfig.ExternalizedCheckpointCleanup cleanup = cfg.getExternalizedCheckpointCleanup();
+			String externalizedCheckpointDirectory = cfg.getExternalizedCheckpointDirectory();
 			// Sanity check
 			if (cleanup == null) {
 				throw new IllegalStateException("Externalized checkpoints enabled, but no cleanup mode configured.");
 			}
-			externalizedCheckpointSettings = ExternalizedCheckpointSettings.externalizeCheckpoints(cleanup.deleteOnCancellation());
+			if (externalizedCheckpointDirectory == null) {
+				externalizedCheckpointSettings = ExternalizedCheckpointSettings.externalizeCheckpoints(cleanup.deleteOnCancellation());
+			} else {
+				externalizedCheckpointSettings = ExternalizedCheckpointSettings.externalizeCheckpoints(cleanup.deleteOnCancellation(), externalizedCheckpointDirectory);
+			}
 		} else {
 			externalizedCheckpointSettings = ExternalizedCheckpointSettings.none();
 		}
