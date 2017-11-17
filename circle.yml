@@ -1,0 +1,33 @@
+
+---
+machine:
+  java:
+    version: oraclejdk8
+  environment:
+    LD_LIBRARY_PATH: /usr/local/lib
+
+dependencies:
+  cache_directories:
+    - "~/.m2/"
+  pre:
+    - git clone https://github.com/BranchMetrics/deploy.git
+    - cp deploy/maven/settings.xml $HOME/.m2/
+  override:
+    - mvn -B clean compile -DskipTests -Drat.skip=true
+  post:
+
+test:
+  override:
+    - mvn -B clean package -DskipTests -Drat.skip=true
+    - ./circle_build.sh
+
+deployment:
+  staging:
+    branch: branch_1.3.0
+    commands:
+      - mvn -DscmCommentPrefix="[ci skip]" -B clean deploy -DskipTests=true -Drat.skip=true
+
+  production:
+    branch: branch_prod
+    commands:
+      - mvn -DscmCommentPrefix="[ci skip]" -B clean release:clean release:prepare release:perform
