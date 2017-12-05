@@ -1,0 +1,38 @@
+
+---
+machine:
+  java:
+    version: oraclejdk8
+  environment:
+    LD_LIBRARY_PATH: /usr/local/lib
+    FLINK_VERSION: 1.3.2
+    HADOOP_VERSION: 2.7.2
+    SCALA_VERSION: 2.10
+    AWS_SHARED_CREDENTIALS_FILE: /home/root/.aws/credentials
+    AWS_CONFIG_FILE: /home/root/.aws/config
+
+dependencies:
+  cache_directories:
+    - "~/.m2/"
+  pre:
+    - git clone https://github.com/BranchMetrics/deploy.git
+    - cp deploy/maven/settings.xml $HOME/.m2/
+  override:
+    - mvn -B clean compile -DskipTests -Drat.skip=true
+  post:
+
+test:
+  override:
+    - mvn -B clean package -DskipTests -Drat.skip=true
+    - ~/deploy/mesos/frameworks/flink/circle_build.sh
+
+deployment:
+  staging:
+    branch: branch_1.3.0
+    commands:
+      - mvn -DscmCommentPrefix="[ci skip]" -B clean deploy -DskipTests=true -Drat.skip=true
+
+  production:
+    branch: branch_prod
+    commands:
+      - mvn -DscmCommentPrefix="[ci skip]" -B clean release:clean release:prepare release:perform
